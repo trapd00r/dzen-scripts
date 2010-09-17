@@ -4,6 +4,8 @@ use strict;
 my $circle  = "^co(2)";
 my $square  = "^r(2x2)";
 my $i_music = "/home/scp1/devel/dzen-scripts/bitmaps/musicS.xbm";
+my $i_mail  = "/home/scp1/devel/dzen-scripts/bitmaps/mail.xbm";
+my $i_bat   = "/home/scp1/devel/dzen-scripts/bitmaps/battery.xbm";
 
 sub date {
   my @date  = localtime(time);
@@ -30,13 +32,13 @@ sub uptime {
 
 sub load {
   my $load = shift;
-  if($load > 0.30 and $load < 0.50) {
+  if($load >= 0.30 and $load < 0.50) {
     $load = "^fg(#03ab4a)$load^fg()";
   }
-  elsif($load > 0.75 and $load < 1.00) {
+  elsif($load >= 0.75 and $load < 1.00) {
     $load = "^fg(#f2b30e)$load^fg()";
   }
-  elsif($load > 1.00) {
+  elsif($load >= 1.00) {
     $load = "^fg(#ff0000)$load^fg()";
   }
   else {
@@ -45,6 +47,30 @@ sub load {
   return($load);
 }
 
+sub mail {
+  open(my $fh, 'ssh -p 19216 scp1@192.168.1.101 "ls /mnt/Docs/Mail/inbox/new"|') or die($!);
+  my @new = <$fh>;
+  close($fh);
+  my $count = scalar(@new);
+
+  $count = ($count > 0) ? "^fg(#f50208)$count^fg()" : $count;
+  return("^i($i_mail) " . $count);
+}
+
+sub battery {
+  open(my $fh, 'acpi|') or die($!);
+  chomp(my $bat = <$fh>);
+  close($fh);
+
+  $bat =~ s/: (.+), ([0-9]+)%,.+/$1 $2/;
+  my $status = $1;
+  my $percent = $2;
+  $status = ($status eq 'Full') ? 'Charging' : $status;
+  $percent = ($percent < 50) ? "^fg(#ff0000)$percent^fg()" : "^fg(#13c40f)$percent^fg()";
+
+  return("^i($i_bat) $status: $percent%");
+
+}
 
 
 sub mpd {
@@ -64,8 +90,12 @@ sub mpd {
   return $trunc;
 }
 
-print "^bg()";
-print("^i($i_music)",mpd(), "  ", uptime(), "^bg(4D4C4C)");
-print "^bg()";
+my $output = "^i($i_music)" . mpd()
+  . "^fg(#484848) | ^fg()" . uptime()
+  . "^fg(#484848) | ^fg()" . mail()
+  . "^fg(#484848) | ^fg()" . battery()
+  . "^fg(#484848) | ^fg()";
+
+print $output;
 
 # vim: set tw=99999:
