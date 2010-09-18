@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 use strict;
+use String::Utils 'longest';
 
-my $i_music = "/home/scp1/devel/dzen-scripts/bitmaps/musicS.xbm";
+#my $i_music = "/home/scp1/devel/dzen-scripts/bitmaps/musicS.xbm";
+my $i_music = "/home/scp1/devel/dzen-scripts/bitmaps/music.xbm";
 my $i_mail  = "/home/scp1/devel/dzen-scripts/bitmaps/mail.xbm";
 my $i_bat   = "/home/scp1/devel/dzen-scripts/bitmaps/battery.xbm";
 
@@ -136,6 +138,7 @@ sub battery {
 }
 
 
+my $mpd_len_leftover = 0;
 sub mpd {
   use Audio::MPD;
   my $mpd = Audio::MPD->new(
@@ -148,18 +151,78 @@ sub mpd {
   }
 
   my $status = "/home/scp1/devel/dzen-scripts/bitmaps/" . $mpd->status->state . '.xbm';
-  my $artist = $current->artist // 'undef';
 
+  my $artist = $current->artist // 'undef';
   my $album  = $current->album  // 'undef';
   my $title  = $current->title  // 'undef';
   my $year   = $current->date   // 0;
 
-  my $pl = sprintf(" ^fg(#6be603)%.40s^fg(#999999),^fg() ^fg(#ff8700)%.40s", $title, $artist);
+  my $art_len = longest($artist);
+  my $alb_len = longest($album);
+  my $tit_len = longest($title);
+
+  my $spacing = 9;
+
+  if($art_len > 30) {
+    $artist = substr($artist, 0, 37) . '^fg(#999999)...^fg()';
+  }
+  else {
+    for($art_len .. 30) {
+      $mpd_len_leftover++;
+    }
+  }
+  if($alb_len > 30) {
+    $album = substr($album, 0, 37) . '^fg(#999999)...^fg()';
+  }
+  else {
+    for($alb_len .. 30) {
+      $mpd_len_leftover++;
+    }
+  }
+  if($tit_len > 30) {
+    $title = substr($title, 0, 37) . '^fg(#999999)...^fg()';
+  }
+  else {
+    for($tit_len .. 30) {
+      $mpd_len_leftover++;
+    }
+  }
+
+  my $pl = "^i($i_music) ^fg(#6be603)$title^fg(#999999) by ^fg(#ff8700)$artist^fg(#999999) from^fg() ^fg(#f8072e)$album^fg()";
 
   return($pl);
 }
 
-my $output = "^i($i_music)" . mpd()
+sub newtv {
+  use Flexget::Parse 'flexparse';
+  use Flexget::PatternMatch 'patternmatch';
+  use Media::Sort 'getmedia';
+  mpd(); # uh, uh
+
+  my $file = "$ENV{HOME}/.flexget.log";
+  open(my $fh, '<', $file) or die($!);
+  chomp(my @r = <$fh>);
+  close($fh);
+
+  @r = getmedia('tv', flexparse(@r));
+
+  my $wanted = $r[$#r];
+
+  if($wanted =~ m/(History|Discovery)\.(Channel)(?:The)?(.+)\.(.+)-(.+)/) {
+    $wanted = "^fg(#484848)$1.$2^fg(#6be603)$3^fg().$4";
+
+  }
+
+
+  my $len = longest($wanted);
+  my $allowed_len = $mpd_len_leftover;
+
+  #return("%-${allowed_len}s", $wanted);
+  return(sprintf("^fg(#ff8700)TV^fg(): ^bg(#141414)%.${allowed_len}s^bg()", $wanted));
+}
+
+my $output = newtv()
+  . "^fg(#484848) | ^fg()" . mpd()
   . "^fg(#484848) | ^fg()" . uptime()
   . "^fg(#484848) | ^fg()" . shiva_uptime()
   . "^fg(#484848) | ^fg()" . dvdc_uptime()
