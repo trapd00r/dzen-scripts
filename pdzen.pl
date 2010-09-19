@@ -5,7 +5,7 @@ use String::Utils 'longest';
 #my $i_music = "/home/scp1/devel/dzen-scripts/bitmaps/musicS.xbm";
 my $i_music = "/home/scp1/devel/dzen-scripts/bitmaps/music.xbm";
 my $i_mail  = "/home/scp1/devel/dzen-scripts/bitmaps/mail.xbm";
-my $i_bat   = "/home/scp1/devel/dzen-scripts/bitmaps/battery.xbm";
+my $i_bat   = "/home/scp1/devel/dzen-scripts/bitmaps/bat_full_01.xbm";
 
 sub date {
   my @date  = localtime(time);
@@ -133,7 +133,9 @@ sub battery {
   close($fh);
 
   $bat =~ s/Battery percentage:\s+(\d+).+/$1/;
-  return("^i($i_bat) $bat%");
+
+  ($bat > 50) ? ($bat = "^fg(#a2ee13)^i($i_bat) ^fg(#44ee13)$bat^fg()") : ($bat = "^fg(#3be70a)^i($i_bat)^fg(#e7120a)$bat^fg()");
+  return("$bat%");
 
 }
 
@@ -199,7 +201,7 @@ sub newtv {
   use Media::Sort 'getmedia';
   mpd(); # uh, uh
 
-  my $file = "$ENV{HOME}/.flexget.log";
+  my $file = "/mnt/shiva/.flexget.log";
   open(my $fh, '<', $file) or die($!);
   chomp(my @r = <$fh>);
   close($fh);
@@ -209,20 +211,24 @@ sub newtv {
   my $wanted = $r[$#r];
 
   if($wanted =~ m/(History|Discovery)\.(Channel)(?:The)?(.+)\.(.+)-(.+)/) {
-    $wanted = "^fg(#484848)$1.$2^fg(#6be603)$3^fg().$4";
-
+    $wanted = "^fg(#484848)$1.$2^fg(#e3c216)$3^fg().$4";
   }
+  if($wanted =~ m/(.+)(swedish|swesub)(.+)/i) {
+    $wanted = "^fg(#4e78fc)$1^fg(#ffff00)$2^fg(#4e78fc)$3^fg()";
+  }
+  $wanted =~ s/(.+)(S\d+E\d+)(.+)/$1^fg(#ff0000)$2^fg()$3/;
 
 
+  $wanted = sprintf("%.55s", $wanted);
   my $len = longest($wanted);
-  my $allowed_len = $mpd_len_leftover;
+  my $allowed_len = $mpd_len_leftover + 30;
 
   #return("%-${allowed_len}s", $wanted);
-  return(sprintf("^fg(#ff8700)TV^fg(): ^bg(#141414)%.${allowed_len}s^bg()", $wanted));
+  return(sprintf("^ba(1300, LEFT)^fg(#ff8700)TV^fg(): %.${allowed_len}s ^fg(#29c478) " , $wanted));
 }
 
 my $output = newtv()
-  . "^fg(#484848) | ^fg()" . mpd()
+ . mpd()
   . "^fg(#484848) | ^fg()" . uptime()
   . "^fg(#484848) | ^fg()" . shiva_uptime()
   . "^fg(#484848) | ^fg()" . dvdc_uptime()
