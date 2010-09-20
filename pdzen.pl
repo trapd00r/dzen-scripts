@@ -1,6 +1,9 @@
 #!/usr/bin/perl
 use strict;
 use String::Utils 'longest';
+use Flexget::PatternMatch 'patternmatch';
+use Flexget::Parse 'flexparse';
+use Media::Sort 'getmedia';
 
 #my $i_music = "/home/scp1/devel/dzen-scripts/bitmaps/musicS.xbm";
 my $i_music = "/home/scp1/devel/dzen-scripts/bitmaps/music.xbm";
@@ -195,7 +198,28 @@ sub mpd {
   return($pl);
 }
 
-sub newtv {
+sub newmusic {
+  my $l = '/mnt/shiva/.flexget.log';
+  open(my $fh, '<', $l) or die($!);
+  my @r = <$fh>;
+  close($fh);
+  mpd(); # he-hu
+
+  my $len = 0;
+  my $output = undef;
+
+  my $foo = patternmatch('dzen', getmedia('music', flexparse(@r)));
+  for(keys(%$foo)) {
+    next if /(?:DVDRip|x265)/;
+    if($foo->{$_} =~ m;(?:hip-hip|psy|v/a|hardstyle|rock);i) {
+      $len = $mpd_len_leftover;
+      $output = sprintf("%s: %.${len}s", $foo->{$_}, $_);
+      return($output);
+    }
+  }
+}
+
+sub newrel {
   use Flexget::Parse 'flexparse';
   use Flexget::PatternMatch 'patternmatch';
   use Media::Sort 'getmedia';
@@ -206,7 +230,7 @@ sub newtv {
   chomp(my @r = <$fh>);
   close($fh);
 
-  @r = getmedia('tv', flexparse(@r));
+  @r = getmedia('music', flexparse(@r));
 
   my $wanted = $r[$#r];
 
@@ -216,23 +240,22 @@ sub newtv {
   if($wanted =~ m/(.+)(swedish|swesub)(.+)/i) {
     $wanted = "^fg(#4e78fc)$1^fg(#ffff00)$2^fg(#4e78fc)$3^fg()";
   }
-  $wanted =~ s/(.+)(S\d+E\d+)(.+)/$1^fg(#ff0000)$2^fg()$3/;
 
 
-  $wanted = sprintf("%.55s", $wanted);
+  $wanted = sprintf("%.75s", $wanted);
   my $len = longest($wanted);
   my $allowed_len = $mpd_len_leftover + 30;
 
   #return("%-${allowed_len}s", $wanted);
-  return(sprintf("^ba(1300, LEFT)^fg(#ff8700)TV^fg(): %.${allowed_len}s ^fg(#29c478) " , $wanted));
+  return(sprintf("^fg(#ff8700)MU^fg(): %.${allowed_len}s ^fg(#29c478) " , $wanted));
 }
 
-my $output = newtv()
+my $output = newmusic()
  . mpd()
   . "^fg(#484848) | ^fg()" . uptime()
   . "^fg(#484848) | ^fg()" . shiva_uptime()
   . "^fg(#484848) | ^fg()" . dvdc_uptime()
-#  . "^fg(#484848) | ^fg()" . n900_uptime()
+  #. "^fg(#484848) | ^fg()" . n900_uptime()
   . "^fg(#484848) | ^fg()" . mail()
   . "^fg(#484848) | ^fg()" . battery()
   . "^fg(#484848) | ^fg()";
