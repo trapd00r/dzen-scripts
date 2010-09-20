@@ -126,7 +126,18 @@ sub mail {
   close($fh);
   my $count = scalar(@new);
 
-  $count = ($count > 0) ? "^fg(#f50208)$count^fg()" : $count;
+  open(my $fh, "ssh -p 19216 scp1\@192.168.1.101 \"/bin/cat /mnt/Docs/Mail/inbox/new/$new[$#new]\"|") or return;
+  my $subject = 'NULL';
+  while(<$fh>) {
+    if($_ =~ m;^Subject: (.+);) {
+      $subject = $1;
+    }
+  }
+  if(length($subject) > 20) {
+    $subject = substr($subject, 0, 20) . "^fg(#484848)...^fg()";
+  }
+
+  $count = ($count > 0) ? "^fg(#f50208)$count^fg(#484848)(^fg(#f6ee0e)$subject^fg(#484848))^fg()" : $count;
   return("^i($i_mail) " . $count);
 }
 
