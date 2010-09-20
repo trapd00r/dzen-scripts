@@ -212,8 +212,12 @@ sub newmusic {
   for(keys(%$foo)) {
     next if /(?:DVDRip|x265)/;
     if($foo->{$_} =~ m;(?:hip-hip|psy|v/a|hardstyle|rock);i) {
-      $len = $mpd_len_leftover;
-      $output = sprintf("%s: %.${len}s", $foo->{$_}, $_);
+      my $match = undef;
+      if($_ =~ /(psy)(.*)/gpi) {
+        $match = sprintf("${^PREMATCH}^fg(#cc11ab)$1^fg()$2");
+      }
+      $len = $mpd_len_leftover + 20;
+      $output = sprintf("%s: %.${len}s", $foo->{$_}, $match);
       return($output);
     }
   }
