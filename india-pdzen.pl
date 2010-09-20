@@ -213,9 +213,13 @@ sub newmusic {
     next if /(?:DVDRip|x265)/;
     if($foo->{$_} =~ m;(?:hip-hip|psy|v/a|hardstyle|rock);i) {
       my $match = undef;
-      if($_ =~ /(psy)(.*)/gpi) {
-        $match = sprintf("${^PREMATCH}^fg(#cc11ab)$1^fg()$2");
+      if($_ =~ /(psy|gem|psycz|upe|eminem)(.*)/gpi) {
+        $match = sprintf("${^PREMATCH}^fg(#0ffd07)$1^fg()$2");
       }
+      else {
+        $match = $_;
+      }
+
       $len = $mpd_len_leftover + 20;
       $output = sprintf("%s: %.${len}s", $foo->{$_}, $match);
       return($output);
@@ -255,7 +259,7 @@ sub newrel {
 }
 
 my $output = newmusic()
- . mpd()
+  . "^fg(#484848) | ^fg()" . mpd()
   . "^fg(#484848) | ^fg()" . uptime()
   . "^fg(#484848) | ^fg()" . shiva_uptime()
   . "^fg(#484848) | ^fg()" . dvdc_uptime()
