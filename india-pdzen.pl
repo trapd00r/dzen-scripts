@@ -133,11 +133,18 @@ sub mail {
       $subject = $1;
     }
   }
+  $subject =~ s;=\?ISO-8859-1\?.+ ;;; # stupid crap
   if(length($subject) > 20) {
     $subject = substr($subject, 0, 20) . "^fg(#484848)...^fg()";
   }
+  if($subject =~ m;^(Re):(.+);) {
+    $subject = "^fg(#484848)(^fg(#ff3101)$1^fg(#484848):^fg(#ffff00)$2^fg(#484848))^fg()";
+  }
+  else {
+    $subject = "^fg(#484848)(^fg(#f6ee0e)$subject^fg(484848))^fg()";
+  }
 
-  $count = ($count > 0) ? "^fg(#f50208)$count^fg(#484848)(^fg(#f6ee0e)$subject^fg(#484848))^fg()" : $count;
+  $count = ($count > 0) ? "^fg(#f50208)$count $subject" : $count;
   return("^i($i_mail) " . $count);
 }
 
@@ -155,6 +162,7 @@ sub battery {
 
 
 my $mpd_len_leftover = 0;
+my $mpd_max_len = 0;
 sub mpd {
   use Audio::MPD;
   my $mpd = Audio::MPD->new(
@@ -176,6 +184,8 @@ sub mpd {
   my $art_len = longest($artist);
   my $alb_len = longest($album);
   my $tit_len = longest($title);
+
+  $mpd_max_len = $art_len + $alb_len + $tit_len;
 
   my $spacing = 9;
 
@@ -209,67 +219,43 @@ sub mpd {
   return($pl);
 }
 
-sub newmusic {
-  my $l = '/mnt/shiva/.flexget.log';
+sub newrel {
+  my $l = "/mnt/shiva/.flexget.log";
   open(my $fh, '<', $l) or die($!);
   my @r = <$fh>;
   close($fh);
+
   mpd(); # he-hu
 
   my $len = 0;
+  my($release, $rel_info);
   my $output = undef;
 
-  my $foo = patternmatch('dzen', getmedia('music', flexparse(@r)));
-  for(keys(%$foo)) {
-    next if /(?:DVDRip|x265)/;
-    if($foo->{$_} =~ m;(?:hip-hip|psy|v/a|hardstyle|rock);i) {
-      my $match = undef;
-      if($_ =~ /(psy|gem|psycz|upe|eminem)(.*)/gpi) {
-        $match = sprintf("${^PREMATCH}^fg(#0ffd07)$1^fg()$2");
-      }
-      else {
-        $match = $_;
+  my $foo  = patternmatch('dzen', getmedia('tv', flexparse(@r)));
+
+  use Data::Dumper;
+  for my $n(sort { $foo->{$a} > $foo->{$b} } keys(%$foo)) {
+    for my $show(keys(%{$foo->{$n}})) {
+      # lolol.
+      $release = $show;
+      $rel_info = $foo->{$n}{$show};
+
+      $len = $mpd_len_leftover;
+      if(length($release) + length($rel_info) > 40) {
+        $release = substr($release, 0, 20) . "^fg(#484848)..^fg()";
       }
 
-      $len = $mpd_len_leftover + 20;
-      $output = sprintf("%s: %.${len}s", $foo->{$_}, $match);
+      if($release =~ m/(house)\.(.*)/igp) {
+        $release = "${^PREMATCH}^fg(#71f802)$1.^fg()$2";
+      }
+      $output = sprintf("%s: %s", $rel_info, $release);
       return($output);
     }
   }
 }
 
-sub newrel {
-  use Flexget::Parse 'flexparse';
-  use Flexget::PatternMatch 'patternmatch';
-  use Media::Sort 'getmedia';
-  mpd(); # uh, uh
 
-  my $file = "/mnt/shiva/.flexget.log";
-  open(my $fh, '<', $file) or die($!);
-  chomp(my @r = <$fh>);
-  close($fh);
-
-  @r = getmedia('music', flexparse(@r));
-
-  my $wanted = $r[$#r];
-
-  if($wanted =~ m/(History|Discovery)\.(Channel)(?:The)?(.+)\.(.+)-(.+)/) {
-    $wanted = "^fg(#484848)$1.$2^fg(#e3c216)$3^fg().$4";
-  }
-  if($wanted =~ m/(.+)(swedish|swesub)(.+)/i) {
-    $wanted = "^fg(#4e78fc)$1^fg(#ffff00)$2^fg(#4e78fc)$3^fg()";
-  }
-
-
-  $wanted = sprintf("%.75s", $wanted);
-  my $len = longest($wanted);
-  my $allowed_len = $mpd_len_leftover + 30;
-
-  #return("%-${allowed_len}s", $wanted);
-  return(sprintf("^fg(#ff8700)MU^fg(): %.${allowed_len}s ^fg(#29c478) " , $wanted));
-}
-
-my $output = newmusic()
+my $output = newrel()
   . "^fg(#484848) | ^fg()" . mpd()
   . "^fg(#484848) | ^fg()" . uptime()
   . "^fg(#484848) | ^fg()" . shiva_uptime()
