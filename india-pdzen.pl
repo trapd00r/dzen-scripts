@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 use strict;
 use String::Utils 'longest';
-use Flexget::PatternMatch 'patternmatch';
-use Flexget::Parse 'flexparse';
-use Media::Sort 'getmedia';
+use Flexget::PatternMatch;
+use Flexget::Parse;
+use Media::Sort;
 
 #my $i_music = "/home/scp1/devel/dzen-scripts/bitmaps/musicS.xbm";
 my $i_music = "/home/scp1/devel/dzen-scripts/bitmaps/music.xbm";
@@ -126,6 +126,10 @@ sub mail {
   close($fh);
   my $count = scalar(@new);
 
+  if($count == 0) {
+    return("^i($i_mail) $count");
+  }
+
   open(my $fh, "ssh -p 19216 scp1\@192.168.1.101 \"/bin/cat /mnt/Docs/Mail/inbox/new/$new[$#new]\"|") or return;
   my $subject = 'NULL';
   while(<$fh>) {
@@ -231,7 +235,7 @@ sub newrel {
   my($release, $rel_info);
   my $output = undef;
 
-  my $foo  = patternmatch('dzen', getmedia('tv', flexparse(@r)));
+  my $foo  = patternmatch('dzen', media_sort('tv', flexparse(@r)));
 
   use Data::Dumper;
   for my $n(sort { $foo->{$a} > $foo->{$b} } keys(%$foo)) {
