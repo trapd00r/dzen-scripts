@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 use strict;
+use utf8;
 use String::Utils 'longest';
 use Flexget::PatternMatch;
 use Flexget::Parse;
@@ -184,6 +185,14 @@ sub mpd {
   my $album  = $current->album  // 'undef';
   my $title  = $current->title  // 'undef';
   my $year   = $current->date   // 0;
+
+  # dzen doesnt handle unicode
+  $artist =~ s/ö/o/g;
+  $artist =~ s/[åä]/a/g;
+  $album  =~ s/ö/o/g;
+  $album  =~ s/[åä]/a/g;
+  $title  =~ s/ö/o/g;
+  $title  =~ s/[åä]/a/g;
 
   my $art_len = longest($artist);
   my $alb_len = longest($album);
