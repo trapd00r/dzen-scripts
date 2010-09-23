@@ -244,10 +244,10 @@ sub newrel {
   my($release, $rel_info);
   my $output = undef;
 
-  my $foo  = patternmatch('dzen', media_sort('tv', flexparse(@r)));
+  my $foo = patternmatch('dzen', flexparse(@r));
 
   use Data::Dumper;
-  for my $n(sort { $foo->{$a} > $foo->{$b} } keys(%$foo)) {
+  for my $n(sort(keys(%{$foo}))) {
     for my $show(keys(%{$foo->{$n}})) {
       # lolol.
       $release = $show;
