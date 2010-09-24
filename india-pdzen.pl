@@ -255,7 +255,7 @@ sub newrel {
 
       $len = $mpd_len_leftover;
       if(length($release) + length($rel_info) > 40) {
-        $release = substr($release, 0, 20) . "^fg(#484848)..^fg()";
+        $release = substr($release, 0, 40) . "^fg(#484848)..^fg()";
       }
 
       if($release =~ m/(house)\.(.*)/igp) {
@@ -272,7 +272,7 @@ my $output = newrel()
   . "^fg(#484848) | ^fg()" . mpd()
   . "^fg(#484848) | ^fg()" . uptime()
   . "^fg(#484848) | ^fg()" . shiva_uptime()
-  . "^fg(#484848) | ^fg()" . dvdc_uptime()
+  # . "^fg(#484848) | ^fg()" . dvdc_uptime()
   #. "^fg(#484848) | ^fg()" . n900_uptime()
   . "^fg(#484848) | ^fg()" . mail()
   . "^fg(#484848) | ^fg()" . battery()
