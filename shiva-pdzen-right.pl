@@ -1,20 +1,14 @@
 #!/usr/bin/perl
 use strict;
 use String::Utils 'longest';
-use Flexget::PatternMatch 'patternmatch';
-use Flexget::Parse 'flexparse';
-use Media::Sort 'getmedia';
+use Flexget::PatternMatch;
+use Flexget::Parse;
+use Media::Sort;
 
 #my $i_music = "/home/scp1/devel/dzen-scripts/bitmaps/musicS.xbm";
 my $i_music = "/home/scp1/devel/dzen-scripts/bitmaps/music.xbm";
 my $i_mail  = "/home/scp1/devel/dzen-scripts/bitmaps/mail.xbm";
-my $i_bat   = "/home/scp1/devel/dzen-scripts/bitmaps/bat_full_01.xbm";
 
-sub date {
-  my @date  = localtime(time);
-  my $fdate = sprintf("%02s:%02s", $date[2], $date[1]);
-  return $fdate;
-}
 
 sub uptime {
   chomp(my $up = `uptime`);
@@ -130,18 +124,6 @@ sub mail {
   return("^i($i_mail) " . $count);
 }
 
-sub battery {
-  open(my $fh, 'ibam --percentbattery|head -1|') or die($!);
-  chomp(my $bat = <$fh>);
-  close($fh);
-
-  $bat =~ s/Battery percentage:\s+(\d+).+/$1/;
-
-  ($bat > 50) ? ($bat = "^fg(#a2ee13)^i($i_bat) ^fg(#44ee13)$bat^fg()") : ($bat = "^fg(#3be70a)^i($i_bat)^fg(#e7120a)$bat^fg()");
-  return("$bat%");
-
-}
-
 
 my $mpd_len_leftover = 0;
 sub mpd {
@@ -224,38 +206,33 @@ sub newmusic {
 }
 
 sub newrel {
-  use Flexget::Parse 'flexparse';
-  use Flexget::PatternMatch 'patternmatch';
-  use Media::Sort 'getmedia';
   mpd(); # uh, uh
 
-  my $file = "/mnt/shiva/.flexget.log";
+  my $file = "$ENV{HOME}/.flexget.log";
   open(my $fh, '<', $file) or die($!);
   chomp(my @r = <$fh>);
   close($fh);
 
-  @r = getmedia('music', flexparse(@r));
 
-  my $wanted = $r[$#r];
+  my $f = patternmatch('dzen', flexparse(@r));
+  my $release  = undef;
+  my $output   = undef;
+  my $rel_info = undef;
 
-  if($wanted =~ m/(History|Discovery)\.(Channel)(?:The)?(.+)\.(.+)-(.+)/) {
-    $wanted = "^fg(#484848)$1.$2^fg(#e3c216)$3^fg().$4";
+  for my $n(sort(keys(%{$f}))) {
+    for my $rel(keys(%{$f->{$n}})) {
+      $release = $rel;
+
+      $rel_info = $f->{$n}{$rel};
+
+      $output = sprintf("%s: %s", $rel_info, $release);
+      return($output);
+    }
   }
-  if($wanted =~ m/(.+)(swedish|swesub)(.+)/i) {
-    $wanted = "^fg(#4e78fc)$1^fg(#ffff00)$2^fg(#4e78fc)$3^fg()";
-  }
-
-
-  $wanted = sprintf("%.75s", $wanted);
-  my $len = longest($wanted);
-  my $allowed_len = $mpd_len_leftover + 30;
-
-  #return("%-${allowed_len}s", $wanted);
-  return(sprintf("^fg(#ff8700)MU^fg(): %.${allowed_len}s ^fg(#29c478) " , $wanted));
 }
 
-my $output = #newmusic()
-  mpd()
+my $output = newrel() 
+  . mpd()
   . "^fg(#484848) | ^fg()" . uptime()
   . "^fg(#484848) | ^fg()" . india_uptime()
   . "^fg(#484848) | ^fg()" . dvdc_uptime()
