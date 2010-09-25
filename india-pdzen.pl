@@ -2,6 +2,7 @@
 use strict;
 use utf8;
 use String::Utils 'longest';
+use local::lib "$ENV{HOME}/devel/local-lib";
 use Flexget::PatternMatch;
 use Flexget::Parse;
 use Media::Sort;
@@ -146,7 +147,7 @@ sub mail {
     $subject = "^fg(#484848)(^fg(#ff3101)$1^fg(#484848):^fg(#ffff00)$2^fg(#484848))^fg()";
   }
   else {
-    $subject = "^fg(#484848)(^fg(#f6ee0e)$subject^fg(484848))^fg()";
+    $subject = "^fg(#484848)(^fg(#f6ee0e)$subject^fg(#484848))^fg()";
   }
 
   $count = ($count > 0) ? "^fg(#f50208)$count $subject" : $count;
@@ -254,8 +255,8 @@ sub newrel {
       $rel_info = $foo->{$n}{$show};
 
       $len = $mpd_len_leftover;
-      if(length($release) + length($rel_info) > 40) {
-        $release = substr($release, 0, 40) . "^fg(#484848)..^fg()";
+      if(length($release) > 50) {
+        $release = substr($release, 0, 50) . "^fg(#484848)..^fg()";
       }
 
       if($release =~ m/(house)\.(.*)/igp) {
