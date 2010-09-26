@@ -11,7 +11,7 @@ my $i_mail  = "/home/scp1/devel/dzen-scripts/bitmaps/mail.xbm";
 
 
 sub uptime {
-  chomp(my $up = `uptime`);
+ chomp(my $up = `uptime`);
   my ($_1,$_5,$_15) = $up =~ /average: (.+),(.+),(.+)$/;
   $_1 =~ s/\s+//;
   $_5 =~ s/\s+//;
@@ -21,12 +21,15 @@ sub uptime {
   $_5 = load($_5);
   $_15 = load($_15);
 
-  return sprintf("^fg(#5bde58)shiva^fg(): $_1^fg(#999999),^fg() $_5^fg(#999999),^fg() $_15");
+  return sprintf("^fg(#888888)shiva^fg(): $_1^fg(#888888),^fg() $_5^fg(#888888),^fg() $_15");
 }
 
 sub india_uptime {
-  open(my $fh, 'ssh -p 19216 scp1@192.168.1.102 "uptime"|') or return("shiva: down");
+  open(my $fh, 'ssh -p 19216 scp1@192.168.1.102 "uptime" &>/dev/null|') or return("shiva: down");
   chomp(my $up = <$fh>);
+  if(!defined($up)) {
+    return("^fg(#888888)india^fg(): ^fg(#ff0000)down^fg(#f8072e)!^fg()");
+  }
   my ($_1,$_5,$_15) = $up =~ /average: (.+),(.+),(.+)$/;
   $_1 =~ s/\s+//;
   $_5 =~ s/\s+//;
@@ -36,7 +39,7 @@ sub india_uptime {
   $_5 = load($_5);
   $_15 = load($_15);
 
-  return sprintf("^fg(#588dde)india^fg(): $_1^fg(#999999),^fg() $_5^fg(#999999),^fg() $_15");
+  return sprintf("^fg(#888888)india^fg(): $_1^fg(#888888),^fg() $_5^fg(#888888),^fg() $_15");
 }
 
 sub dvdc_uptime {
@@ -51,7 +54,7 @@ sub dvdc_uptime {
   $_5 = load($_5);
   $_15 = load($_15);
 
-  return sprintf("^fg(#de5860)dvdc^fg(): $_1^fg(#999999),^fg() $_5^fg(#999999),^fg() $_15");
+  return sprintf("^fg(#888888)dvdc^fg(): $_1^fg(#888888),^fg() $_5^fg(#888888),^fg() $_15");
 }
 
 sub n900_uptime {
@@ -66,14 +69,14 @@ sub n900_uptime {
   $_5 = load($_5);
   $_15 = load($_15);
 
-  return sprintf("^fg(#f6f409)n900^fg(): $_1^fg(#999999),^fg() $_5^fg(#999999),^fg() $_15");
+  return sprintf("^fg(#888888)n900^fg(): $_1^fg(#888888),^fg() $_5^fg(#888888),^fg() $_15");
 }
 
 
 sub load {
   chomp(my $load = shift);
   if($load < 0.10) {
-    $load = "^fg(#09ff00)$load^fg()";
+    $load = "^fg(#33b02e)$load^fg()";
   }
   if($load >= 0.10 and $load <= 0.20) {
     $load = "^fg(#28f809)$load^fg()";
@@ -143,6 +146,7 @@ sub mpd {
   my $album  = $current->album  // 'undef';
   my $title  = $current->title  // 'undef';
   my $year   = $current->date   // 0;
+  my $genre  = $current->genre  // 'undef';
 
   my $art_len = longest($artist);
   my $alb_len = longest($album);
@@ -151,7 +155,7 @@ sub mpd {
   my $spacing = 9;
 
   if($art_len > 30) {
-    $artist = substr($artist, 0, 37) . '^fg(#999999)...^fg()';
+    $artist = substr($artist, 0, 37) . '^fg(#888888)...^fg()';
   }
   else {
     for($art_len .. 30) {
@@ -159,7 +163,7 @@ sub mpd {
     }
   }
   if($alb_len > 30) {
-    $album = substr($album, 0, 37) . '^fg(#999999)...^fg()';
+    $album = substr($album, 0, 37) . '^fg(#888888)...^fg()';
   }
   else {
     for($alb_len .. 30) {
@@ -167,7 +171,7 @@ sub mpd {
     }
   }
   if($tit_len > 30) {
-    $title = substr($title, 0, 37) . '^fg(#999999)...^fg()';
+    $title = substr($title, 0, 37) . '^fg(#888888)...^fg()';
   }
   else {
     for($tit_len .. 30) {
@@ -175,7 +179,10 @@ sub mpd {
     }
   }
 
-  my $pl = "^i($i_music) ^fg(#6be603)$title^fg(#999999) by ^fg(#ff8700)$artist^fg(#999999) from^fg() ^fg(#f8072e)$album^fg()";
+  my $pl = "^i($i_music) ^fg(#6be603)$title^fg(#888888) by "
+    . "^fg(#ff8700)$artist^fg(#888888) on"
+    . " ^fg(#f8072e)$album"
+    . " ^fg(#888888)from ^fg(#5496ff)$year^fg()";
 
   return($pl);
 }
@@ -222,22 +229,39 @@ sub newrel {
   for my $n(sort(keys(%{$f}))) {
     for my $rel(keys(%{$f->{$n}})) {
       $release = $rel;
-
       $rel_info = $f->{$n}{$rel};
+      $release = sprintf("%.50s", $release);
 
-      $output = sprintf("%s: %s", $rel_info, $release);
+
+      $output = sprintf("%s^fg(#ffd7ab): ^fg(#ffffff)%s^fg()", $rel_info, $release);
       return($output);
     }
   }
 }
 
-my $output = newrel() 
-  . mpd()
-  . "^fg(#484848) | ^fg()" . uptime()
-  . "^fg(#484848) | ^fg()" . india_uptime()
-  . "^fg(#484848) | ^fg()" . dvdc_uptime()
-  #. "^fg(#484848) | ^fg()" . n900_uptime()
-  . "^fg(#484848) | ^fg()";
+sub date {
+  my(undef, undef, undef, $mday, $mon, $year) = localtime(time);
+  $mon += 1;
+  $year += 1900;
+
+  return(sprintf("%04d-%02d-%02d", $year, $mon, $mday));
+}
+
+
+
+my $output = 
+  date()
+  . "^fg(#5d5d5d) | ^fg()" . newrel()
+  . "^fg(#5d5d5d) | ^fg()" . mpd()
+  . "^fg(#5d5d5d) | ^fg()" . uptime()
+  . "^fg(#5d5d5d) | ^fg()" . india_uptime()
+  . "^fg(#5d5d5d) | ^fg()" . dvdc_uptime()
+  #. "^fg(#5d5d5d) | ^fg()" . n900_uptime()
+  #. "^fg(#5d5d5d) | ^fg()" . "\n";
+
+
+  . "\n";
+  ;
 
 print $output;
 
