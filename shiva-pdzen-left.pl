@@ -11,15 +11,25 @@ sub mail {
   my $subject = 'NULL';
 
   open(my $fh, '<', $mail[$#mail]) or die($!);
-  while(<$fh>) {
+  my @c = <$fh>;
+
+  for(@c) {
     if($_ =~ m;^Subject: (.+);) {
       $subject = $1;
     }
   }
-  $subject = sprintf("%.40s", $subject);
+  if($subject =~ /UTF-8/) {
+    for(@c) {
+      if($_ =~ /^From: .* <(.+)>/) {
+        $subject = $1;
+      }
+    }
+  }
+  $subject = sprintf("%.70s", $subject);
 
   $subject =~ s/(Re):(.+)/^fg(#c12c00)$1^fg():^fg(#c18400)$2^fg()/;
-  return("^i($i_mail) ^fg(#ff0000)$count^fg(#484848) (^fg(#b8cca5)$subject^fg(#484848))^fg()");
+  $subject =~ s/(\[)(.+)(\])/^fg(#ffffff)$1^fg(#80c100)$2^fg(#ffffff)$3^fg()/g;
+  return("^fg(#e2ffa8)^i($i_mail) ^fg(#ff0000)$count^fg(#484848) (^fg(#b8cca5)$subject^fg(#484848))^fg()");
 }
 
 sub clock {
