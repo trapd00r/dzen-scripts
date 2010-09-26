@@ -248,14 +248,89 @@ sub date {
 }
 
 
+sub get_no_proc {
+  opendir(my $dh, '/proc') or warn($!);
+  my @processes = grep{/^[0-9]+/} readdir($dh); # PIDs
+  return("^fg(#959595)Processes^fg():^fg(#ff0000) " . scalar(@processes));
+}
 
-my $output = 
+sub get_mem {
+  open(my $fh, '<', '/proc/meminfo') or warn($!);
+  my ($total,$free,$buffers,$cached) = undef;
+  while(<$fh>) {
+    if(/^MemTotal:\s+([0-9]+)\s+/) {
+      $total = to_mb($1);
+    }
+    elsif(/^MemFree:\s+([0-9]+)\s+/) {
+      $free = to_mb($1);
+    }
+    elsif(/^Buffers:\s+([0-9]+)\s+/) {
+      $buffers = to_mb($1);
+    }
+    elsif(/^Cached:\s+([0-9]+)/) {
+      $cached = to_mb($1);
+    }
+  }
+  my $avail = $free + ($buffers + $cached);
+  my $used  = $total - $avail;
+
+  my $mem = $used / $total;
+  $mem =~ s/..(..).+/$1/; # :D
+
+  if($mem  >= 5 and $mem <= 10) {
+    $used = "^fg(#15e100)$used^fg()";
+  }
+  elsif($mem  >= 11 and $mem <= 15) {
+    $used = "^fg(#5ee100)$used^fg()";
+  }
+  elsif($mem  >= 16 and $mem <= 20) {
+    $used = "^fg(#8ce100)$used^fg()";
+  }
+  elsif($mem  >= 21 and $mem <= 25) {
+    $used = "^fg(#bee100)$used^fg()";
+  }
+  elsif($mem  >= 26 and $mem <= 30) {
+    $used = "^fg(#eid300)$used^fg()";
+  }
+  elsif($mem  >= 31 and $mem <= 40) {
+    $used = "^fg(#e1a100)$used^fg()";
+  }
+  elsif($mem  >= 41 and $mem <= 50) {
+    $used = "^fg(#e17c00)$used^fg()";
+  }
+  elsif($mem  >= 51 and $mem <= 60) {
+    $used = "^fg(#e15800)$used^fg()";
+  }
+  elsif($mem  >= 61 and $mem <= 70) {
+    $used = "^fg(#e13400)$used^fg()";
+  }
+  elsif($mem  >= 71 and $mem <= 80) {
+    $used = "^fg(#e11800)$used^fg()";
+  }
+  elsif($mem  >= 81 and $mem <= 90) {
+    $used = "^fg(#e10013)$used^fg()";
+  }
+  else {
+    $used = "^fg(#ff0000)$used^fg()";
+  }
+  my $out = sprintf("^fg(#959595)Mem^fg(): %s^fg(#b8e4dd)MB^fg()/^fg(#a7a7a7)%s^fg(#b8e4dd)MB^fg()",
+    $used,  $total);
+}
+
+sub to_mb {
+  my $kb = shift;
+  return(sprintf("%d",$kb/1024));
+}
+
+my $output =
   date()
   . "^fg(#5d5d5d) | ^fg()" . newrel()
   . "^fg(#5d5d5d) | ^fg()" . mpd()
   . "^fg(#5d5d5d) | ^fg()" . uptime()
   . "^fg(#5d5d5d) | ^fg()" . india_uptime()
   . "^fg(#5d5d5d) | ^fg()" . dvdc_uptime()
+  . "^fg(#5d5d5d) | ^fg()" . get_no_proc()
+  . "^fg(#5d5d5d) | ^fg()" . get_mem()
   #. "^fg(#5d5d5d) | ^fg()" . n900_uptime()
   #. "^fg(#5d5d5d) | ^fg()" . "\n";
 
