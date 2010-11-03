@@ -69,7 +69,18 @@ sub temp {
   return("^fg(#15c8ec)^i($i_temp) $temp^fg(#999999)°C^fg()");
 }
 
-print 
+sub im {
+  open(my $ssh, '-|', "ssh -p 19216 scp1\@192.168.1.100 'cat /home/scp1/irclogs/192/bitlbee_current.log'") or die($!);
+  my @want = grep{/>> scp1/} <$ssh>;
+
+  my($who,$msg) = $want[scalar(@want)-1] =~ m/\S+\s+(.+) >> scp1> (.+)/;
+
+  return("^fg(#78ae00) $who^fg(#ffffff)~ ^fg(#888888)'^fg(#abaca7)$msg^fg(#888888)'^fg() ");
+}
+
+print
+  im()
+  .
   "^fg(#ffffff)"
   . temp()
   . "^fg(#789afa) | ^fg(#888888)"
