@@ -75,13 +75,23 @@ sub im {
 
   my($who,$msg) = $want[scalar(@want)-1] =~ m/\S+\s+(.+) >> scp1> (.+)/;
 
-  return("^fg(#78ae00) $who^fg(#ffffff)~ ^fg(#888888)'^fg(#abaca7)$msg^fg(#888888)'^fg() ");
+  return("^fg(#78ae00) $who^fg(#444444) says^fg(#ffffff): ^fg(#888888)'^fg(#abaca7)$msg^fg(#888888)'^fg() ");
 }
 
+sub irc {
+  open(my $ssh, '-|', "ssh -p 19216 scp1\@192.168.1.100 'cat /home/scp1/irclogs/freenode/cout.dev.current.log'") or die($!);
+  my @want = <$ssh>;
+  $want[scalar(@want) -1] =~ s/^\S+//;
+  my($who, $msg) = $want[scalar(@want)-1] =~ m/\S+\s+(\S+)\s+(.+)/;
+  $msg = sprintf("%.40s", $msg);
+
+  return("^fg(#78ae00) $who^fg(#444444) says^fg(#ffffff): ^fg(#888888)'^fg(#abaca7)$msg^fg(#888888)'^fg() ");
+}
 print
-  im()
-  .
-  "^fg(#ffffff)"
+  irc()
+  . "^fg(#789afa) | ^fg(#888888)"
+  . im()
+  . "^fg(#789afa) | ^fg(#888888)"
   . temp()
   . "^fg(#789afa) | ^fg(#888888)"
   . mail()
