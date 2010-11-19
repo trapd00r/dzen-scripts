@@ -79,13 +79,11 @@ sub im {
 }
 
 sub irc {
-  open(my $ssh, '-|', "ssh -p 19216 scp1\@192.168.1.100 'cat /home/scp1/irclogs/freenode/cout.dev.current.log'") or die($!);
-  my @want = <$ssh>;
-  $want[scalar(@want) -1] =~ s/^\S+//;
-  my($who, $msg) = $want[scalar(@want)-1] =~ m/\S+\s+(\S+)\s+(.+)/;
-  $msg = sprintf("%.40s", $msg);
+  open(my $ssh, '-|', "ssh -p 19216 scp1\@192.168.1.100 'cat /home/scp1/irclogs/global_highlights.log'") or die($!);
+  chomp(my @want = <$ssh>);
 
-  return("^fg(#78ae00) $who^fg(#444444) says^fg(#ffffff): ^fg(#888888)'^fg(#abaca7)$msg^fg(#888888)'^fg() ");
+  my($chan, $who, $msg) = $want[scalar(@want) -1] =~ m/(\S+)\s+(\S+)(?:\s*>>\s*)?\s+(.+)/;
+  return("^fg(#ff0039) $chan^fg(#444444)> ^fg(#78ae00)$who^fg(#888888): ^fg(#ffffff)$msg^fg()");
 }
 print
   irc()

@@ -132,7 +132,7 @@ my $mpd_len_leftover = 0;
 sub mpd {
   use Audio::MPD;
   my $mpd = Audio::MPD->new(
-    host => '192.168.1.101',
+    host => '192.168.1.100',
   );
 
   my $current = $mpd->current;
