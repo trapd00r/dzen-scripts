@@ -1,9 +1,8 @@
 #!/usr/bin/perl
 # The RIGHT bar
 use strict;
-use lib '/home/scp1/devel/utils/lib/';
-use Trapd00r::Linux;
-use Trapd00r::Linux::Mail;
+use lib './lib';
+use Trapd00r::Dzen;
 use Flexget::Parse;
 use Flexget::PatternMatch;
 
@@ -47,6 +46,9 @@ sub _new_rel {
   chomp(my @new = <$fh>);
 
   @new = flexparse(@new);
+  if(scalar(@new) == 0) {
+    return 'NULL';
+  }
 
   my $rel = patternmatch('dzen', $new[-1]);
 

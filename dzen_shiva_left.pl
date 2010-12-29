@@ -1,9 +1,8 @@
 #!/usr/bin/perl
 # The LEFT bar
 use strict;
-use lib '/home/scp1/devel/utils/lib/';
-use Trapd00r::Linux;
-use Trapd00r::Linux::Mail;
+use lib './lib';
+use Trapd00r::Dzen;
 
 
 my %dzen_icons  = (
