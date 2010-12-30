@@ -16,9 +16,9 @@ my %dzen_colors = (
   yellow_subject  => '^fg(#b8cca5)',
 
   irc_chan_prefix => '^fg(#484848)',
-  irc_chan        => '^fg(#737373)',
-  irc_nick        => '^fg(#ff1e00)',
-  irc_msg         => '^fg(#888888)',
+  irc_chan        => '^fg(#777777)',
+  irc_nick        => '^fg(#ff4a00)',
+  irc_msg         => '^fg(#999999)',
 
   blue_temp       => "^fg(#15c8ec)$dzen_icons{arch}^fg()",
 
@@ -115,8 +115,10 @@ sub _time {
 
   my($s, $m, $h) = localtime(time);
 
-  return sprintf("^fg(#ff2b00)%2d^fg(#888888):^fg(#908365)%02d^fg(#888888):%02d",
-    $h, $m, $s);
+  return
+    sprintf("^fg(#ff2b00)%02d^fg(#888888):^fg(#908365)%02d^fg(#888888):%02d",
+      $h, $m, $s
+    );
 }
 
 my $d = '^fg(#484848) | ^fg()';
