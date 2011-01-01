@@ -35,14 +35,14 @@ my %dzen_colors = (
   default_bg      => '^bg()',
 );
 
-sub _new_rel {
-  my $log = "$ENV{XDG_DATA_HOME}/flexget/flexget.log";
+sub _new_rel{
+  my $log = "$ENV{HOME}/.local/share/flexget/flexget.log";
 
   if(! -f $log) {
     return 'NULL';
   }
 
-  open(my $fh, '<', $log) or return 'NULL';
+  open(my $fh, '<', $log) or return ' Nothing released today';
   chomp(my @new = <$fh>);
 
   @new = flexparse(@new);
@@ -52,9 +52,16 @@ sub _new_rel {
 
   my $rel = patternmatch('dzen', $new[-1]);
 
-  my $output = sprintf("%s: %s",
-    values %{$rel->{0}}, keys %{$rel->{0}}, # yes, cheating!
-  );
+  my $output;
+  if(scalar keys(%{$rel}) < 1) {
+    $rel = $new[-1];
+    $output = $new[-1];
+  }
+  else {
+    $output = sprintf("%s: %s",
+      values %{$rel->{0}}, keys %{$rel->{0}}, # yes, cheating!
+    );
+  }
   return $output;
 }
 
