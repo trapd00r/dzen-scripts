@@ -3,6 +3,14 @@
 use strict;
 use lib './lib';
 use Trapd00r::Dzen;
+use Data::Dumper;
+$Data::Dumper::Terse     = 1;
+$Data::Dumper::Indent    = 1;
+$Data::Dumper::Useqq     = 1;
+$Data::Dumper::Deparse   = 1;
+$Data::Dumper::Quotekeys = 0;
+$Data::Dumper::Sortkeys  = 1;
+
 
 
 my %dzen_icons  = (
@@ -35,9 +43,10 @@ my %dzen_colors = (
 sub _irc_hilight {
   my $latest = irc_msgs();
 
-  my($channel, $who, $msg) = $latest =~ m/^(?:#|&)(\S+)\s+(\S+)\s+(.+)/;
+  my($channel, $who, $msg) = $latest =~ m/^[#&] (\S+) \s*(.+)\s*>>\s* (.+)$/x;
+  $who =~ s/(?:^.\s+|\s+$)//;
 
-  $msg =~ s/>> scp1:?//;
+  $msg =~ s/scp1[:,]? ?//;
 
   if( (!$msg) or (!defined($msg)) or ($msg =~ /^\s+$/) ) {
     $msg = '^fg(#484848)highlight^fg()';
