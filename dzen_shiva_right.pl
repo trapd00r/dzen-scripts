@@ -3,8 +3,8 @@
 use strict;
 use lib './lib';
 use Trapd00r::Dzen;
-use Flexget::Parse;
-use Flexget::PatternMatch;
+use Parse::Flexget qw(flexparse);
+use File::PatternMatch qw(patternmatch);
 
 
 my %dzen_icons  = (
@@ -53,15 +53,8 @@ sub _new_rel{
   my $rel = patternmatch('dzen', $new[-1]);
 
   my $output;
-  if(scalar keys(%{$rel}) < 1) {
-    $rel = $new[-1];
-    $output = $new[-1];
-  }
-  else {
-    $output = sprintf("%s: %s",
-      values %{$rel->{0}}, keys %{$rel->{0}}, # yes, cheating!
-    );
-  }
+  $rel = $new[scalar(@new) - 1];
+  $output = $rel;
   return $output;
 }
 
