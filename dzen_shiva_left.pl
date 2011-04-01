@@ -46,7 +46,7 @@ sub _irc_hilight {
   my($channel, $who, $msg) = $latest =~ m/^[#&] (\S+) \s*(.+)\s*>>\s* (.+)$/x;
   $who =~ s/(?:^.\s+|\s+$)//;
 
-  $msg =~ s/scp1[:,]? ?//;
+  $msg =~ s/woldrich[:,]? ?//;
 
   if( (!$msg) or (!defined($msg)) or ($msg =~ /^\s+$/) ) {
     $msg = '^fg(#484848)highlight^fg()';
@@ -67,7 +67,7 @@ sub _im_hilight {
   my $latest = im_msgs();
   my($channel, $who, $msg) = $latest =~ m/^(?:#|&)(\S+)\s+(\S+)\s+(.+)/;
 
-  $msg =~ s/>> scp1> //;
+  $msg =~ s/>> woldrich> //;
 
   my $output = sprintf("%s%s %s %s",
     $dzen_colors{irc_chan_prefix} . '&' . $dzen_colors{default_fg},
