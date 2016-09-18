@@ -5,6 +5,7 @@
 DZEN_OPT='-l 1 -dock -u -ta r -sa r -x 0 -y 0 -w 1600 -l 1 -bg "#121212"'
 
 while true; do
+  printf "knradio:^fg(#f79f07)"; knnp | perl -pe 's/\n//' ; printf "^fg()| "
   date '+%d %b ^fg(#ff003e)%H^fg() ^fg(#ff003e)%M^fg()' | perl -pe 's/\n/ | /g'
   printf "^fg(#f05906)%d^fg() new mail | " $(ls $HOME/mail/new | wc -l)
   printf "Bob says: ^fg(#56c7f6)"; sort -R ~/dev/bob/lyrics | head -1 | perl -pe 's/\n/ /'; printf "^fg()| "
